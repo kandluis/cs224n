@@ -145,9 +145,8 @@ def negSamplingLossAndGradient(centerWordVec,
   # to the gradients.
   # (K + 1, 1) x (1, nFeatures) = (K + 1, nFeatures)
   scaledCenterVectors = np.dot(scalingFactors.T, centerWordVec)
-  # gradOutsideVectors.add.at(indices)
-
   # Since we can have duplicate indexes, we just iterate directly.
+  # This is bit inefficient, but I'm not sure how to do it in numpy otherwise.
   for i, index in enumerate(indices):
     gradOutsideVecs[index] += scaledCenterVectors[i]
   ### END YOUR CODE
