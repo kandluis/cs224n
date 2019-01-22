@@ -376,3 +376,6 @@ TSWLatexianTemp*
 
 # Mac.
 *.DS_Store
+
+*.pickle
+*.npy
