@@ -54,23 +54,22 @@ def naiveSoftmaxLossAndGradient(centerWordVec, outsideWordIdx, outsideVectors,
   ### This numerically stable implementation helps you avoid issues pertaining
   ### to integer overflow.
   nWords, nFeatures = outsideVectors.shape
-  y = np.zeros(nWords)
-  y[outsideWordIdx] = 1.0
+  y = np.zeros((1, nWords))
+  y[0, outsideWordIdx] = 1.0
 
-  # (nWords x nFeatures) x (nFeatures, 1) = (nWords, 1)
-  assert centerWordVec.shape == (nFeatures, 1)
-  yhat = softmax(np.dot(outsideVectors, centerWordVec).flatten()).reshape(
-      nWords, 1)
+  # [(nWords x nFeatures) x (nFeatures, 1)]^T = (1, nWords)
+  assert centerWordVec.shape == (1, nFeatures)
+  yhat = softmax(np.dot(outsideVectors, centerWordVec.T).T)
   assert np.abs(yhat.sum() - 1.0) < 0.0001
-  assert yhat.shape == (nWords, 1)
-  loss = -np.log(yhat[outsideWordIdx])
+  assert yhat.shape == (1, nWords)
+  loss = -np.log(yhat[0, outsideWordIdx])
 
-  #  (nFeatures, nWords) x (nWords x 1) = (nFeatures, 1)
-  gradCenterVec = np.dot(outsideVectors.T, yhat - y)
-  assert gradCenterVec.shape == (nFeatures, 1)
+  # (1, nWords) x (nWords, nFeatures) x (nWords x 1) = (1, nFeatures)
+  gradCenterVec = np.dot(yhat - y, outsideVectors)
+  assert gradCenterVec.shape == (1, nFeatures)
 
-  # (nWords, 1) x (1, nFeatures) = (nWords x nFeatures)
-  gradOutsideVecs = np.dot(yhat - y, centerWordVec.T)
+  # [(nFeatures, 1) x (1, nWords)]^T = (nWords x nFeatures)
+  gradOutsideVecs = np.dot(centerWordVec.T, yhat - y).T
   assert gradOutsideVecs.shape == outsideVectors.shape
 
   ### END YOUR CODE
@@ -117,23 +116,27 @@ def negSamplingLossAndGradient(centerWordVec,
   ### YOUR CODE HERE
   nWords, nFeatures = outsideVectors.shape
   sampledWordVectors = outsideVectors[indices]
-  assert sampledWordVectors.shape == (len(indices), nFeatures)
+  assert sampledWordVectors.shape == (K + 1, nFeatures)
 
-  # (K+1, nFeatures) x (nFeatures, 1) = (K+1, 1)
-  assert centerWordVec.shape == (nFeatures, 1)
-  dotProduct = -np.dot(sampledWordVectors, centerWordVec)
-  dotProduct[0] *= -1
+  # (1, nFeatures) x (nFeatures, K+1) x  = (1, K+1)
+  assert centerWordVec.shape == (1, nFeatures)
+  dotProduct = -np.dot(centerWordVec, sampledWordVectors.T)
+  assert dotProduct.shape == (1, K + 1)
+  dotProduct[0, 0] *= -1
   sigmoidResults = sigmoid(dotProduct)
+  assert sigmoidResults.shape == dotProduct.shape
   loss = -np.sum(np.log(sigmoidResults))
 
   scalingFactors = 1 - sigmoidResults
-  scalingFactors[0] *= -1
+  assert scalingFactors.shape == (1, K + 1)
+  scalingFactors[0, 0] *= -1
+
   # Takes advantage of broadcasting.
-  # scalingFactors is (K+1, 1) and sampledWordVectors is (K+1, nFeatures)
-  scaledOuterVectors = scalingFactors * sampledWordVectors
-  assert scaledOuterVectors.shape == (K + 1, nFeatures)
-  # Sum so the results is (1, nFeatures)
-  gradCenterVec = np.sum(scaledOuterVectors, axis=0).T
+  # scalingFactors is (1, K + 1) and sampledWordVectors.T is (nFeatures, K + 1)
+  scaledOuterVectors = scalingFactors * sampledWordVectors.T
+  assert scaledOuterVectors.shape == (nFeatures, K + 1)
+  # Sum so the results is (nFeatures, )
+  gradCenterVec = np.sum(scaledOuterVectors, axis=1)
   assert gradCenterVec.shape == (nFeatures, )
   gradCenterVec = gradCenterVec.reshape(nFeatures, 1)
 
@@ -141,11 +144,11 @@ def negSamplingLossAndGradient(centerWordVec,
   # Explicitly scale the single vector by different values. The rows correspond
   # to the gradients.
   # (K + 1, 1) x (1, nFeatures) = (K + 1, nFeatures)
-  scaledCenterVectors = np.dot(scalingFactors, centerWordVec.T)
+  scaledCenterVectors = np.dot(scalingFactors.T, centerWordVec)
 
   # Since we can have duplicate indexes, we just iterate directly.
-  for index in indices:
-    gradOutsideVecs[index] += scaledCenterVectors[index]
+  for i, index in enumerate(indices):
+    gradOutsideVecs[index, :] += scaledCenterVectors[i, :]
   ### END YOUR CODE
 
   return loss, gradCenterVec, gradOutsideVecs
@@ -194,9 +197,7 @@ def skipgram(currentCenterWord,
   ### YOUR CODE HERE
   nWords, nFeatures = centerWordVectors.shape
   currentCenterWordInd = word2Ind[currentCenterWord]
-  centerWordVec = centerWordVectors[currentCenterWordInd]
-  print(centerWordVec.shape)
-  assert centerWordVec.shape == nFeatures
+  centerWordVec = centerWordVectors[currentCenterWordInd].reshape(1, nFeatures)
   for word in outsideWords:
     outsideWordIdx = word2Ind[word]
     innerLoss, innerGradCenterVec, innerGradOutsideVecs = word2vecLossAndGradient(
@@ -204,7 +205,7 @@ def skipgram(currentCenterWord,
     loss += innerLoss
     gradCenterVecs[currentCenterWordInd] += innerGradCenterVec.reshape(
         gradCenterVecs[currentCenterWordInd].shape)
-    gradOutsideVectors += gradOutsideVectors
+    gradOutsideVectors += innerGradOutsideVecs
 
   ### END YOUR CODE
 
