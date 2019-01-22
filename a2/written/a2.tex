@@ -87,7 +87,7 @@ Next, with respect to $\bm{u}_k$.
 And finally, with respect to $\bm{v}_c$.
 \begin{align*}
 \frac{\partial J}{\partial \bm{v}_c} &= - \frac{\partial}{\partial \bm{v}_c} \log \sigma(\bm{u}_o^T \bm{v}_c) - \sum_{k=1}^K \frac{\partial}{\partial \bm{v}_c} \log \sigma(-\bm{u}_k^T \bm{v}_c)  \\
-&= -(1 - \sigma(\bm{u}_o^T \bm{v}_c)) + \sum_{k=1}^K (1 - \sigma(-\bm{u}_k^T \bm{v}_c)) \bm{u}_k \tag{Previous results} 
+&= -(1 - \sigma(\bm{u}_o^T \bm{v}_c))\bm{u}_o + \sum_{k=1}^K (1 - \sigma(-\bm{u}_k^T \bm{v}_c)) \bm{u}_k \tag{Previous results} 
 \end{align*}
 Computing the naive-softmax requires iterating over the entire vocabulary, which can be extremely large, while the negative sampling loss requires considering only $K+1$ samples.
 
@@ -95,7 +95,7 @@ Computing the naive-softmax requires iterating over the entire vocabulary, which
 \begin{enumerate}[label=\roman*]
   \item 
   $$
-  \frac{\partial \bm{J}_{\text{skip-gram}}(\bm{v}_c, w_{t-m}, \cdots, w_{t+m}, \bm{U})}{\partial \bm{v}_c } = \sum_{\substack{-m \leq j \leq m \\ j \neq 0}} \frac{\partial \bm{J}(\bm{v}_c, w_{t+m}, \bm{U}) }{\partial \bm{U}}
+  \frac{\partial \bm{J}_{\text{skip-gram}}(\bm{v}_c, w_{t-m}, \cdots, w_{t+m}, \bm{U})}{\partial \bm{U} } = \sum_{\substack{-m \leq j \leq m \\ j \neq 0}} \frac{\partial \bm{J}(\bm{v}_c, w_{t+m}, \bm{U}) }{\partial \bm{U}}
   $$
   \item 
   $$

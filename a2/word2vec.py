@@ -115,9 +115,36 @@ def negSamplingLossAndGradient(centerWordVec,
   indices = [outsideWordIdx] + negSampleWordIndices
 
   ### YOUR CODE HERE
+  nWords, nFeatures = outsideVectors.shape
+  sampledWordVectors = outsideVectors[indices]
+  assert sampledWordVectors.shape == (len(indices), nFeatures)
 
-  ### Please use your implementation of sigmoid in here.
+  # (K+1, nFeatures) x (nFeatures, 1) = (K+1, 1)
+  assert centerWordVec.shape == (nFeatures, 1)
+  dotProduct = -np.dot(sampledWordVectors, centerWordVec)
+  dotProduct[0] *= -1
+  sigmoidResults = sigmoid(dotProduct)
+  loss = -np.sum(np.log(sigmoidResults))
 
+  scalingFactors = 1 - sigmoidResults
+  scalingFactors[0] *= -1
+  # Takes advantage of broadcasting.
+  # scalingFactors is (K+1, 1) and sampledWordVectors is (K+1, nFeatures)
+  scaledOuterVectors = scalingFactors * sampledWordVectors
+  assert scaledOuterVectors.shape == (K + 1, nFeatures)
+  # Sum so the results is (1, nFeatures)
+  gradCenterVec = np.sum(scaledOuterVectors, axis=0).T
+  assert gradCenterVec.shape == (nFeatures, 1)
+
+  gradOutsideVecs = np.zeros((nWords, nFeatures))
+  # Explicitly scale the single vector by different values. The rows correspond
+  # to the gradients.
+  # (K + 1, 1) x (1, nFeatures) = (K + 1, nFeatures)
+  scaledCenterVectors = np.dot(scalingFactors, centerWordVec.T)
+
+  # Since we can have duplicate indexes, we just iterate directly.
+  for index in indices:
+    gradOutsideVecs[index] += scaledCenterVectors[index]
   ### END YOUR CODE
 
   return loss, gradCenterVec, gradOutsideVecs
@@ -164,6 +191,15 @@ def skipgram(currentCenterWord,
   gradOutsideVectors = np.zeros(outsideVectors.shape)
 
   ### YOUR CODE HERE
+  currentCenterWordInd = word2Ind[currentCenterWord]
+  centerWordVec = centerWordVectors[currentCenterWordInd]
+  for word in outsideWords:
+    outsideWordIdx = word2Ind[word]
+    innerLoss, innerGradCenterVec, innerGradOutsideVecs = word2vecLossAndGradient(
+        centerWordVec, outsideWordIdx, outsideVectors, dataset)
+    loss += innerLoss
+    gradCenterVecs += innerGradCenterVec
+    gradOutsideVectors[currentCenterWordInd] += gradOutsideVectors
 
   ### END YOUR CODE
 
