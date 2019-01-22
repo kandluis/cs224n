@@ -108,6 +108,22 @@ Computing the naive-softmax requires iterating over the entire vocabulary, which
 \end{enumerate}
 \end{enumerate}
 
+\section*{Problem 2}
+\begin{enumerate}[label=(\alph*)]
+  \item In `word2vec.py'
+  \item In `sgd.py'
+  \item Using `run.py' we get Figure \ref{fig:projection}. The plot shows the projection of our learned word vectors into two dimensions.
+
+  We see a few clusters forming -- such as adjectives (``amazing'', ``wonderful'', ``great'', ``boring'') -- which, not surprisingly, contain not only synonyms but also antonyms. We also see a few other interesting clusters, such as ``queen'' and ``dumb'' (surprising, and sexist) as well as ``female'' and ``woman'' (not surprising). Lastly, we see ``hail'' as a single, unclustered word, which is a bit surprising given what we would intuitively expect (to cluster with ``snow'', ``rain'' as a weather phenomena).
+    \begin{figure}[!h]
+      \centering
+      \includegraphics[]{../word_vectors.png}
+      \caption{Projection of word2vec embeddings.}
+      \label{fig:projection}
+    \end{figure}
+\end{enumerate}
+
+
 
 
 
