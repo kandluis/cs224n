@@ -45,7 +45,7 @@ def sgd(f,
         iterations,
         postprocessing=None,
         useSaved=False,
-        PRINT_EVERY=10):
+        PRINT_EVERY=1000):
   """ Stochastic Gradient Descent
 
     Implement the stochastic gradient descent method in this function.
