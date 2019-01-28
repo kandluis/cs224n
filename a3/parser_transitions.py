@@ -31,7 +31,9 @@ class PartialParse(object):
     ###
     ### Note: The root token should be represented with the string "ROOT"
     ###
-
+    self.stack = ["ROOT"]
+    self.buffer = sentence.copy()
+    self.dependencies = []
     ### END YOUR CODE
 
   def parse_step(self, transition):
@@ -48,7 +50,17 @@ class PartialParse(object):
     ###         1. Shift
     ###         2. Left Arc
     ###         3. Right Arc
-
+    if transition == "S":
+      element = self.buffer.pop(0)
+      self.stack.append(element)
+    elif transition == "LA":
+      dependent = self.stack.pop(-2)
+      self.dependencies.append((self.stack[-1], dependent))
+    elif transition == "RA":
+      dependent = self.stack.pop(-1)
+      self.dependencies.append((self.stack[-1], dependent))
+    else:
+      raise Exception("Unsupported transition: %s" % transition)
     ### END YOUR CODE
 
   def parse(self, transitions):
@@ -82,7 +94,7 @@ def minibatch_parse(sentences, model, batch_size):
                                                     list for a parsed sentence. Ordering should be the
                                                     same as in sentences (i.e., dependencies[i] should
                                                     contain the parse for sentences[i]).
-    """
+        """
   dependencies = []
 
   ### YOUR CODE HERE (~8-10 Lines)
@@ -100,7 +112,20 @@ def minibatch_parse(sentences, model, batch_size):
   ###             is being accessed by `partial_parses` and may cause your code to crash.
 
   ### END YOUR CODE
+  partial_parses = [PartialParse(sentence) for sentence in sentences]
+  # Shallow copy. References same objects.
+  unfinished_parses = partial_parses[:]
+  while unfinished_parses:
+    batch = unfinished_parses[:batch_size]
+    transitions = model.predict(batch)
+    for partialParse, transition in zip(batch, transitions):
+      partialParse.parse_step(transition)
+    unfinished_parses = [
+        partialParse for partialParse in unfinished_parses
+        if len(partialParse.stack) != 1 or partialParse.buffer
+    ]
 
+  dependencies = [list(parse.dependencies) for parse in partial_parses]
   return dependencies
 
 
