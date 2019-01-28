@@ -39,7 +39,7 @@ that all of this is my own work.
           $$
           To see exactly why, we can compute $\mathbb{E}[\bm{h}_{\text{drop}}]$ as follows:
           \begin{align*}
-            \matgbb{E}_{p_{\text{drop}}}[\bm{h}_{\text{drop}}]_i &= \gamma\cdot 0 \cdot h_i p_{\text{drop}} + \gamma \cdot 1 \cdot h_i (1 - p_{\text{drop}}) \\
+            \mathbb{E}_{p_{\text{drop}}}[\bm{h}_{\text{drop}}]_i &= \gamma\cdot 0 \cdot h_i p_{\text{drop}} + \gamma \cdot 1 \cdot h_i (1 - p_{\text{drop}}) \\
             &= \frac{1}{1 - p_{\text{drop}}} \cdot (1 - p_{\text{drop}}) h_i \\
             &= h_i
           \end{align*}
@@ -47,6 +47,32 @@ that all of this is my own work.
         \item We apply dropout during training but not during evaluation because during evaluation, we're taking an ensemble of all of the trained subnetworks (produced by using dropout during training), and with the schema above, by not applying dropout during evaulation, we're having the network compute the expected result of the ensemble which can help generalize and thereby perform better.
       \end{enumerate}
 \end{enumerate}
+
+\section*{Problem 2}
+\begin{enumerate}[label=(\alph*)]
+  \item We present the entire table in Table \ref{table:parsing}
+    \begin{table}[h!]
+    \centering
+    \begin{tabular}{l|l|l|l}
+    Stack                              & Buffer                                     & New Dependency                & Transition            \\ \hline
+    {[}ROOT{]}                         & {[}I, parsed, this, sentence, correctly{]} &                               & Initial Configuration \\
+    {[}ROOT, I{]}                      & {[}parsed, this, sentence, correctly{]}    &                               & SHIFT                 \\
+    {[}ROOT, I, parsed{]}              & {[}this, sentence, correctly{]}            &                               & SHIFT                 \\
+    {[}ROOT, parsed{]}                 & {[}this, sentence, correctly{]}            & parsed $\rightarrow$ I        & LEFT-ARC              \\
+    {[}ROOT, parsed, this{]}           & {[}sentence, correctly{]}                  &                               & SHIFT                 \\
+    {[}ROOT, parsed, this, sentence{]} & {[}correctly{]}                            &                               & SHIFT                 \\
+    {[}ROOT, parsed, sentence{]}       & {[}correctly{]}                            & sentence $\rightarrow$ this   & LEFT-ARC              \\
+    {[}ROOT, parsed{]}                 & {[}correctly{]}                            & parsed $\rightarrow$ sentence & RIGHT-ARC             \\
+    {[}ROOT, parsed, correctly{]}      & {[}{]}                                     &                               & SHIFT                 \\
+    {[}ROOT, parsed{]}                 & {[}{]}                                     & parsed$\rightarrow$ correctly & RIGHT-ARC             \\
+    {[}ROOT{]}                         & {[}{]}                                     & ROOT $\rightarrow$ parsed     & RIGHT-ARC            
+    \end{tabular}
+    \caption{Table of transitions for ``I parsed this sentence correctly.''}
+    \label{table:parsing}
+    \end{table}
+  \item For a sentence containing $n$ words, a total of $2n$ steps will be taken to parse the sentence. This is because $n$ SHIFTs will occur (in some order), adding one word to the stack. Since the end condition consists of a stack with a single word, there must be $n$ pops from the stack, and pops can only occur if an *-ARC operation occurs. As such, for a sentence of length $n$, there are $2n$ steps to parse.
+\end{enumerate}
+
 
 
 
