@@ -71,6 +71,10 @@ that all of this is my own work.
     \label{table:parsing}
     \end{table}
   \item For a sentence containing $n$ words, a total of $2n$ steps will be taken to parse the sentence. This is because $n$ SHIFTs will occur (in some order), adding one word to the stack. Since the end condition consists of a stack with a single word, there must be $n$ pops from the stack, and pops can only occur if an *-ARC operation occurs. As such, for a sentence of length $n$, there are $2n$ steps to parse.
+  \item Implementation in ``parser_transitions.py''.
+  \item Implementation in ``parser_transitions.py''.
+  \item Implementation in ``parser_model.py'' and ``run.py''. Best UAS achieved on dev set is $72.82$ (after Epoch 8). The best UAS achieved on the test set is 
+
 \end{enumerate}
 
 
