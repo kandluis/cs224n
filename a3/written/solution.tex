@@ -52,29 +52,55 @@ that all of this is my own work.
 \begin{enumerate}[label=(\alph*)]
   \item We present the entire table in Table \ref{table:parsing}
     \begin{table}[h!]
-    \centering
-    \begin{tabular}{l|l|l|l}
-    Stack                              & Buffer                                     & New Dependency                & Transition            \\ \hline
-    {[}ROOT{]}                         & {[}I, parsed, this, sentence, correctly{]} &                               & Initial Configuration \\
-    {[}ROOT, I{]}                      & {[}parsed, this, sentence, correctly{]}    &                               & SHIFT                 \\
-    {[}ROOT, I, parsed{]}              & {[}this, sentence, correctly{]}            &                               & SHIFT                 \\
-    {[}ROOT, parsed{]}                 & {[}this, sentence, correctly{]}            & parsed $\rightarrow$ I        & LEFT-ARC              \\
-    {[}ROOT, parsed, this{]}           & {[}sentence, correctly{]}                  &                               & SHIFT                 \\
-    {[}ROOT, parsed, this, sentence{]} & {[}correctly{]}                            &                               & SHIFT                 \\
-    {[}ROOT, parsed, sentence{]}       & {[}correctly{]}                            & sentence $\rightarrow$ this   & LEFT-ARC              \\
-    {[}ROOT, parsed{]}                 & {[}correctly{]}                            & parsed $\rightarrow$ sentence & RIGHT-ARC             \\
-    {[}ROOT, parsed, correctly{]}      & {[}{]}                                     &                               & SHIFT                 \\
-    {[}ROOT, parsed{]}                 & {[}{]}                                     & parsed$\rightarrow$ correctly & RIGHT-ARC             \\
-    {[}ROOT{]}                         & {[}{]}                                     & ROOT $\rightarrow$ parsed     & RIGHT-ARC            
-    \end{tabular}
-    \caption{Table of transitions for ``I parsed this sentence correctly.''}
-    \label{table:parsing}
+      \centering
+      \begin{tabular}{l|l|l|l}
+      Stack                              & Buffer                                     & New Dependency                & Transition            \\ \hline
+      {[}ROOT{]}                         & {[}I, parsed, this, sentence, correctly{]} &                               & Initial Configuration \\
+      {[}ROOT, I{]}                      & {[}parsed, this, sentence, correctly{]}    &                               & SHIFT                 \\
+      {[}ROOT, I, parsed{]}              & {[}this, sentence, correctly{]}            &                               & SHIFT                 \\
+      {[}ROOT, parsed{]}                 & {[}this, sentence, correctly{]}            & parsed $\rightarrow$ I        & LEFT-ARC              \\
+      {[}ROOT, parsed, this{]}           & {[}sentence, correctly{]}                  &                               & SHIFT                 \\
+      {[}ROOT, parsed, this, sentence{]} & {[}correctly{]}                            &                               & SHIFT                 \\
+      {[}ROOT, parsed, sentence{]}       & {[}correctly{]}                            & sentence $\rightarrow$ this   & LEFT-ARC              \\
+      {[}ROOT, parsed{]}                 & {[}correctly{]}                            & parsed $\rightarrow$ sentence & RIGHT-ARC             \\
+      {[}ROOT, parsed, correctly{]}      & {[}{]}                                     &                               & SHIFT                 \\
+      {[}ROOT, parsed{]}                 & {[}{]}                                     & parsed$\rightarrow$ correctly & RIGHT-ARC             \\
+      {[}ROOT{]}                         & {[}{]}                                     & ROOT $\rightarrow$ parsed     & RIGHT-ARC            
+      \end{tabular}
+      \caption{Table of transitions for ``I parsed this sentence correctly.''}
+      \label{table:parsing}
     \end{table}
   \item For a sentence containing $n$ words, a total of $2n$ steps will be taken to parse the sentence. This is because $n$ SHIFTs will occur (in some order), adding one word to the stack. Since the end condition consists of a stack with a single word, there must be $n$ pops from the stack, and pops can only occur if an *-ARC operation occurs. As such, for a sentence of length $n$, there are $2n$ steps to parse.
-  \item Implementation in ``parser_transitions.py''.
-  \item Implementation in ``parser_transitions.py''.
-  \item Implementation in ``parser_model.py'' and ``run.py''. Best UAS achieved on dev set is $72.82$ (after Epoch 8). The best UAS achieved on the test set is 
-
+  \item Implementation in ``parser\_transitions.py''.
+  \item Implementation in ``parser\_transitions.py''.
+  \item Implementation in ``parser\_model.py'' and ``run.py''.
+  \item 
+    \begin{enumerate}[label=\roman*]
+      \item 
+        \begin{itemize}
+          \item \textbf{Error type:} Verb Phrase Attachment Error
+          \item \textbf{Incorrect dependency:} wedding $\rightarrow$ fearing
+          \item \textbf{Correct dependency:} heading $\rightarrow$ fearing
+        \end{itemize}
+      \item
+        \begin{itemize}
+          \item \textbf{Error type:} Coordination Attachment Error
+          \item \textbf{Incorrect dependency:} makes $\rightarrow$ rescue
+          \item \textbf{Correct dependency:} rush $\rightarrow$ rescue
+        \end{itemize}
+      \item
+        \begin{itemize}
+          \item \textbf{Error type:} Prepositional Phrase Attachment Error
+          \item \textbf{Incorrect dependency:}  named $\rightarrow$ Midland
+          \item \textbf{Correct dependency:}  guy $\rightarrow$ Midland
+        \end{itemize}
+      \item 
+        \begin{itemize}
+          \item \textbf{Error type:} Modifier Attachment Error
+          \item \textbf{Incorrect dependency:} elements $\rightarrow$ most
+          \item \textbf{Correct dependency:} crucial $\rightarrow$ most
+        \end{itemize}
+    \end{enumerate}
 \end{enumerate}
 
 
