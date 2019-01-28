@@ -1,0 +1,83 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage{hyperref}
+
+\begin{document}
+
+\begin{center}
+{\Large CS224n Winter 2019 Homework 3: Dependency Parsing}
+
+\begin{tabular}{rl}
+SUNet ID: & 05794739 \\
+Name: & Luis Perez \\
+Collaborators: &
+\end{tabular}
+\end{center}
+
+By turning in this assignment, I agree by the Stanford honor code and declare
+that all of this is my own work.
+
+\section*{Problem 1}
+\begin{enumerate}[label=(\alph*)]
+  \item 
+    \begin{enumerate}[label=\roman*]
+      \item 
+        We first note that for $\beta_1 > 0$, $\bm{m}$, as defined, will tend to vary less than the gradient itself, since it will be a weighed average of all previous gradients. For a concrete example, consider the scaler gradients such $\{ -10, 10, -10, 15\}$, which we can see vary significantly. The corresponding $\bm{m}$ values, for a reasonable $\beta_1 = 0.9$, are $\{-1, -0.9 + 1 = 0.1, 0.09 - 0.1 = -0.91, -0.819 + 1.5 = 0.671 \}$, which we can immediately see vary significantly less due to their averaging nature. Overall, this low variance in $\bm{m}$ prevents the changes in the paremeters $\bm{\theta}$ from jumping around too much, either due to a bad minibatch or simply due to the randomness involved in SGD. As such, this can improve learning by taking smaller, more measured steps in a direction more consistent with the true gradient.
+      \item
+        We note that $\bm{v}$ is simply a weighed average of the square of the gradients thusfar, and as such, $\sqrt{\bm{v}}$ is a weighed average of the magnitude of the gradients. Since the update is being re-scaled by $\sqrt{\bm{v}}$, this means that parameters for which the gradients have had small magnitudes (ie, small $\sqrt{\bm{v}}$), will have their changes scaled to be larger. This can help in learning by making sure that even parameters that are receiving small gradient signal can nonetheless still change.
+    \end{enumerate}
+    \item 
+      \begin{enumerate}[label=\roman*]
+        \item As presented, we must have the value:
+          $$
+            \gamma = \frac{1}{1 - p_{\text{drop}}}
+          $$
+          To see exactly why, we can compute $\mathbb{E}[\bm{h}_{\text{drop}}]$ as follows:
+          \begin{align*}
+            \matgbb{E}_{p_{\text{drop}}}[\bm{h}_{\text{drop}}]_i &= \gamma\cdot 0 \cdot h_i p_{\text{drop}} + \gamma \cdot 1 \cdot h_i (1 - p_{\text{drop}}) \\
+            &= \frac{1}{1 - p_{\text{drop}}} \cdot (1 - p_{\text{drop}}) h_i \\
+            &= h_i
+          \end{align*}
+          as desired.
+        \item We apply dropout during training but not during evaluation because during evaluation, we're taking an ensemble of all of the trained subnetworks (produced by using dropout during training), and with the schema above, by not applying dropout during evaulation, we're having the network compute the expected result of the ensemble which can help generalize and thereby perform better.
+      \end{enumerate}
+\end{enumerate}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
