@@ -77,7 +77,9 @@ class NMT(nn.Module):
         bias=True,
         bidirectional=True)
     self.decoder = nn.LSTMCell(
-        input_size=hidden_size, hidden_size=hidden_size, bias=True)
+        input_size=(hidden_size + embed_size),
+        hidden_size=hidden_size,
+        bias=True)
     self.h_projection = nn.Linear(
         in_features=2 * hidden_size, out_features=hidden_size, bias=False)
     self.c_projection = nn.Linear(
@@ -324,7 +326,11 @@ class NMT(nn.Module):
     ###         https://pytorch.org/docs/stable/torch.html#torch.unsqueeze
     ###     Tensor Squeeze:
     ###         https://pytorch.org/docs/stable/torch.html#torch.squeeze
-
+    dec_state = self.decoder(Ybar_t, dec_state)
+    (dec_hidden, dec_cell) = dec_state
+    # batch: (src_len, h) x (h, 1) -> (src_len, 1)
+    e_t = torch.squeeze(
+        torch.bmm(enc_hiddens_proj, torch.unsqueeze(dec_hidden, dim=2)), dim=2)
     ### END YOUR CODE
 
     # Set e_t to -inf where enc_masks has 1
@@ -358,7 +364,15 @@ class NMT(nn.Module):
     ###         https://pytorch.org/docs/stable/torch.html#torch.cat
     ###     Tanh:
     ###         https://pytorch.org/docs/stable/torch.html#torch.tanh
-
+    alpha_t = F.softmax(e_t, dim=1)
+    # (b x 2h x src_len ) @ (b x src_len x 1) = (b x 2h x 1)
+    a_t = torch.squeeze(
+        torch.bmm(
+            enc_hiddens.permute(0, 2, 1), torch.unsqueeze(alpha_t, dim=2)),
+        dim=2)
+    U_t = torch.cat((a_t, dec_hidden), dim=1)
+    V_t = self.combined_output_projection(U_t)
+    O_t = self.dropout(torch.tanh(V_t))
     ### END YOUR CODE
 
     combined_output = O_t
