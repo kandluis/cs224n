@@ -24,82 +24,52 @@ that all of this is my own work.
 
 \section*{Problem 1}
 \begin{enumerate}[label=(\alph*)]
-  \item 
+  \item In ``utils.py''.
+  \item In ``model\_embeddings.py''.
+  \item In ``nmt\_model.py''.
+  \item In ``nmt\_model.py''.
+  \item In ``nmt\_model.py''.
+  \item In ``nmt\_model.py''.
+  \item
+    As per the code, the masks end-up setting the $e_{t,i} = -\infty$ at all positions corresponding to `pad' tokens. This corresponds to assigning $-\infty$ energy to the ``annotations'' (encoder hidden states) corresponding to our padded sequences. After running through a Softmax, this leads to a zero-probability for these states, which means they don't contribute to our overall attention vector $a_t$ since this is the result of a weighed (by the softmax probability) average of the encoder hidden states.
+
+    It is necessary to use the masks in this way since the `pad' tokens are artificial additions (mainly for performance) which should not be used by our decoder to generate translations. This information is not only useless, but could harm the overall ability of the model to translate sentences since many tranlations could be mis-matched in length, leading to `pad' tokens being alinged with real worlds.
+  \item
+    Trained on Azure VM.
+  \item TODO
+  \item
     \begin{enumerate}[label=\roman*]
-      \item 
-        We first note that for $\beta_1 > 0$, $\bm{m}$, as defined, will tend to vary less than the gradient itself, since it will be a weighed average of all previous gradients. For a concrete example, consider the scaler gradients such $\{ -10, 10, -10, 15\}$, which we can see vary significantly. The corresponding $\bm{m}$ values, for a reasonable $\beta_1 = 0.9$, are $\{-1, -0.9 + 1 = 0.1, 0.09 - 0.1 = -0.91, -0.819 + 1.5 = 0.671 \}$, which we can immediately see vary significantly less due to their averaging nature. Overall, this low variance in $\bm{m}$ prevents the changes in the paremeters $\bm{\theta}$ from jumping around too much, either due to a bad minibatch or simply due to the randomness involved in SGD. As such, this can improve learning by taking smaller, more measured steps in a direction more consistent with the true gradient.
-      \item
-        We note that $\bm{v}$ is simply a weighed average of the square of the gradients thusfar, and as such, $\sqrt{\bm{v}}$ is a weighed average of the magnitude of the gradients. Since the update is being re-scaled by $\sqrt{\bm{v}}$, this means that parameters for which the gradients have had small magnitudes (ie, small $\sqrt{\bm{v}}$), will have their changes scaled to be larger. This can help in learning by making sure that even parameters that are receiving small gradient signal can nonetheless still change.
+      \item Dot Product Attention
+        \begin{itemize}
+          \item \textbf{Advantage}: The biggest advantage is computational, as well as the intepretability of this mechanism. The computational complexity of dot product is $O(n)$. Furthermore, this mechanism is very intuitive, where values with high cosine-similarity to the query will receive the most attention.
+          \item \textbf{Disadvantage}: One big disadvantage of this method is a practical one. In order to use this attention mechanism, the values and the query must be of the same dimension. Generally speaking, this is an unnecessary restriction. Additionally, there are not explicit parameters to learn for this attention step, therefore the model is more restricted.
+        \end{itemize}
+      \item Multiplicative Attention:
+        \begin{itemize}
+          \item \textbf{Advantage}: With the introduction of the weight matrix, there is no longer a restriction that the dimension of the query and the values must match. Furthermore, the weight matrix itself can be learned, allowing for more expressivity in the model (ie, a value vector that's close to the query vector can be given a low-score due to the linear transformation it first undergoes).
+          \item \textbf{Disadvantage}: Computational more complex than dot product attention, and some level of interpretability is lost since now there is an additional linear transformation of the value vectors.
+        \end{itemize}
+      \item Additive Attention
+        \begin{itemize}
+          \item \textbf{Advantage}: Explicitly allows for tuning the ``attention dimensionality'' thereby allow for techniques which try to bottleneck or expand the capacitor of the attention mechanism.
+          \item \textbf{Disadvantage}: The most complex of all of the mechanisms, with the least level of interpretability.
+        \end{itemize}
     \end{enumerate}
-    \item 
-      \begin{enumerate}[label=\roman*]
-        \item As presented, we must have the value:
-          $$
-            \gamma = \frac{1}{1 - p_{\text{drop}}}
-          $$
-          To see exactly why, we can compute $\mathbb{E}[\bm{h}_{\text{drop}}]$ as follows:
-          \begin{align*}
-            \mathbb{E}_{p_{\text{drop}}}[\bm{h}_{\text{drop}}]_i &= \gamma\cdot 0 \cdot h_i p_{\text{drop}} + \gamma \cdot 1 \cdot h_i (1 - p_{\text{drop}}) \\
-            &= \frac{1}{1 - p_{\text{drop}}} \cdot (1 - p_{\text{drop}}) h_i \\
-            &= h_i
-          \end{align*}
-          as desired.
-        \item We apply dropout during training but not during evaluation because during evaluation, we're taking an ensemble of all of the trained subnetworks (produced by using dropout during training), and with the schema above, by not applying dropout during evaulation, we're having the network compute the expected result of the ensemble which can help generalize and thereby perform better.
-      \end{enumerate}
 \end{enumerate}
 
-\section*{Problem 2}
+\section*{Problem 1}
 \begin{enumerate}[label=(\alph*)]
-  \item We present the entire table in Table \ref{table:parsing}
-    \begin{table}[h!]
-      \centering
-      \begin{tabular}{l|l|l|l}
-      Stack                              & Buffer                                     & New Dependency                & Transition            \\ \hline
-      {[}ROOT{]}                         & {[}I, parsed, this, sentence, correctly{]} &                               & Initial Configuration \\
-      {[}ROOT, I{]}                      & {[}parsed, this, sentence, correctly{]}    &                               & SHIFT                 \\
-      {[}ROOT, I, parsed{]}              & {[}this, sentence, correctly{]}            &                               & SHIFT                 \\
-      {[}ROOT, parsed{]}                 & {[}this, sentence, correctly{]}            & parsed $\rightarrow$ I        & LEFT-ARC              \\
-      {[}ROOT, parsed, this{]}           & {[}sentence, correctly{]}                  &                               & SHIFT                 \\
-      {[}ROOT, parsed, this, sentence{]} & {[}correctly{]}                            &                               & SHIFT                 \\
-      {[}ROOT, parsed, sentence{]}       & {[}correctly{]}                            & sentence $\rightarrow$ this   & LEFT-ARC              \\
-      {[}ROOT, parsed{]}                 & {[}correctly{]}                            & parsed $\rightarrow$ sentence & RIGHT-ARC             \\
-      {[}ROOT, parsed, correctly{]}      & {[}{]}                                     &                               & SHIFT                 \\
-      {[}ROOT, parsed{]}                 & {[}{]}                                     & parsed$\rightarrow$ correctly & RIGHT-ARC             \\
-      {[}ROOT{]}                         & {[}{]}                                     & ROOT $\rightarrow$ parsed     & RIGHT-ARC            
-      \end{tabular}
-      \caption{Table of transitions for ``I parsed this sentence correctly.''}
-      \label{table:parsing}
-    \end{table}
-  \item For a sentence containing $n$ words, a total of $2n$ steps will be taken to parse the sentence. This is because $n$ SHIFTs will occur (in some order), adding one word to the stack. Since the end condition consists of a stack with a single word, there must be $n$ pops from the stack, and pops can only occur if an *-ARC operation occurs. As such, for a sentence of length $n$, there are $2n$ steps to parse.
-  \item Implementation in ``parser\_transitions.py''.
-  \item Implementation in ``parser\_transitions.py''.
-  \item Implementation in ``parser\_model.py'' and ``run.py''.
   \item 
     \begin{enumerate}[label=\roman*]
+      \item 1
+      \item 2
+      \item 3
+      \item 4
+      \item 5
       \item 
-        \begin{itemize}
-          \item \textbf{Error type:} Verb Phrase Attachment Error
-          \item \textbf{Incorrect dependency:} wedding $\rightarrow$ fearing
-          \item \textbf{Correct dependency:} heading $\rightarrow$ fearing
-        \end{itemize}
-      \item
-        \begin{itemize}
-          \item \textbf{Error type:} Coordination Attachment Error
-          \item \textbf{Incorrect dependency:} makes $\rightarrow$ rescue
-          \item \textbf{Correct dependency:} rush $\rightarrow$ rescue
-        \end{itemize}
-      \item
-        \begin{itemize}
-          \item \textbf{Error type:} Prepositional Phrase Attachment Error
-          \item \textbf{Incorrect dependency:}  named $\rightarrow$ Midland
-          \item \textbf{Correct dependency:}  guy $\rightarrow$ Midland
-        \end{itemize}
-      \item 
-        \begin{itemize}
-          \item \textbf{Error type:} Modifier Attachment Error
-          \item \textbf{Incorrect dependency:} elements $\rightarrow$ most
-          \item \textbf{Correct dependency:} crucial $\rightarrow$ most
-        \end{itemize}
+        \begin{enumerate}[label=\arabic*]
+          \item 1
+        \end{enumerate}
     \end{enumerate}
 \end{enumerate}
 
