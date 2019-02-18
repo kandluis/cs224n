@@ -1,0 +1,79 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage{hyperref}
+
+\begin{document}
+
+\begin{center}
+{\Large CS224n Winter 2019 Homework 4}
+
+\begin{tabular}{rl}
+SUNet ID: & 05794739 \\
+Name: & Luis Perez \\
+Collaborators: &
+\end{tabular}
+\end{center}
+
+By turning in this assignment, I agree by the Stanford honor code and declare
+that all of this is my own work.
+
+\section*{Problem 1}
+\begin{enumerate}[label=(\alph*)]
+  \item The embedding must capture the essence of the item being embedded, and this is reflected by the dimensionality of the embedding -- in other words, the higher the information content (number of unique items), the larger the embedding dimesion should be. Considering that a typical vocabulary size of words, $|\mathcal{V}|$, can be in the thousands or hundreds of thousands (with the number of possible words far higher), while the size of the character set for most languages, $|\mathcal{C}|$, is typically a few orders of magnitude smaller (in the hundreds), it is reasonable that a character embedding of $50$ suffices.
+  \item The number of parameters for the word-based lookup embedding model is trivial to compute (where we treat the embedding itself as trainable). We have the number of parameters as:
+  $$
+    V_{\text{word}} \times e_{\text{word}} = 12.8M
+  $$
+
+  The number of parameters for the character-based embedding model is a little more involved to compute, but can nonetheless still be done. We have:
+  \begin{align*}
+    V_{\text{char}} \times e_{\text{char}} &= 4,800 \tag{Character Embedding Parameters} \\
+    e_{\text{word}} \times e_{\text{char}} \times k + e_{\text{word}}  &= 64,256 \tag{Convolution Parameters} \\
+    2 \times [e_{\text{word}} \times e_{\text{word}} + e_{\text{word}}] &= 131,584 \tag{Highway Network Parameters}
+  \end{align*}
+  This gives a final expression for the number of parameters as:
+  \begin{align*}
+    V_{\text{char}} \times e_{\text{char}} + e_{\text{word}} \times e_{\text{char}} \times k + e_{\text{word}} + 2 \times [e_{\text{word}} \times e_{\text{word}} + e_{\text{word}}]  &= 200,640
+  \end{align*}
+  From the above calculations, it is clear that the word-embedding model has more parameters, by a factor of 64 (almost two orders of magnitude).
+\end{enumerate}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
