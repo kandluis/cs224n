@@ -53,7 +53,8 @@ class CNN(nn.Module):
     """
     conv = F.relu(self.conv1d(x))
     conv_out = self.max_pool(conv)
-    return conv_out.squeeze()
+    # squeeze the last one out to get (batch_size, word_embed_size)
+    return conv_out.squeeze(dim=2)
 
 
 ### END YOUR CODE

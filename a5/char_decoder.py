@@ -28,14 +28,13 @@ class CharDecoder(nn.Module):
     ###       - Set the padding_idx argument of the embedding matrix.
     ###       - Create a new Embedding layer. Do not reuse embeddings created in Part 1 of this assignment.
     super(CharDecoder, self).__init__()
+    self.vocab_size = len(target_vocab.char2id)
     self.charDecoder = nn.LSTM(
         input_size=char_embedding_size, hidden_size=hidden_size, bias=True)
     self.char_output_projection = nn.Linear(
-        in_features=hidden_size,
-        out_features=len(target_vocab.char2id),
-        bias=True)
+        in_features=hidden_size, out_features=self.vocab_size, bias=True)
     self.decoderCharEmb = nn.Embedding(
-        num_embeddings=len(target_vocab.char2id),
+        num_embeddings=self.vocab_size,
         embedding_dim=char_embedding_size,
         padding_idx=target_vocab.char2id['<pad>'])
     self.target_vocab = target_vocab
@@ -53,7 +52,14 @@ class CharDecoder(nn.Module):
         """
     ### YOUR CODE HERE for part 2b
     ### TODO - Implement the forward pass of the character decoder.
-
+    # (length x batch_size) -> (length x batch_size x char_embed_size)
+    char_embeddings = self.decoderCharEmb(input)
+    # dec_hidden is (hn, cn) each of size (1, batch_size, hidden_size)
+    # hidden_t is (length, batch, hidden_size) where it stores each h0, ..., ht
+    hidden_t, dec_hidden = self.charDecoder(char_embeddings, dec_hidden)
+    # scores is (length, batch, |self.vocab_size|)
+    scores_t = self.char_output_projection(hidden_t)
+    return scores_t, dec_hidden
     ### END YOUR CODE
 
   def train_forward(self, char_sequence, dec_hidden=None):
