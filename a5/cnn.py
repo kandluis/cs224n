@@ -53,7 +53,7 @@ class CNN(nn.Module):
     """
     conv = F.relu(self.conv1d(x))
     conv_out = self.max_pool(conv)
-    return conv_out
+    return conv_out.squeeze()
 
 
 ### END YOUR CODE

@@ -4,6 +4,7 @@
 CS224N 2018-19: Homework 5
 """
 ### YOUR CODE HERE for part 1h
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -39,7 +40,7 @@ class Highway(nn.Module):
       @returns (Tensor): tensor of token (batch_size, embed_size)
     """
     projection = F.relu(self.projection(x))
-    gate = F.sigmoid(self.gate(x))
+    gate = torch.sigmoid(self.gate(x))
     highway = gate * projection + (1 - gate) * x
     embedding = self.dropout(highway)
     return embedding

@@ -167,11 +167,11 @@ class VocabEntry(object):
     ###     Connect `words2charindices()` and `pad_sents_char()` which you've defined in
     ###     previous parts
     char_ids = self.words2charindices(sents)
-    sents_t = pad_sents_char(word_ids, self.char2id['<pad>'])
+    sents_t = pad_sents_char(char_ids, self.char2id['<pad>'])
     # (batch_size x max_sentence_length x max_word_length
     sents_var = torch.tensor(sents_t, dtype=torch.long, device=device)
     # We want (max_sentence_length x batch_size x max_word_length)
-    return sents_var.permute(1, 0, 2)
+    return sents_var.permute(1, 0, 2).contiguous()
 
     ### END YOUR CODE
 

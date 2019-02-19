@@ -42,7 +42,7 @@ class ModelEmbeddings(nn.Module):
 
     ### YOUR CODE HERE for part 1j
     self.char_embed_size = 50
-    self.word_embed_size = embed_size
+    self.embed_size = embed_size
     self.window_size = 5
     self.max_word_length = 21
     self.dropout_rate = 0.3
@@ -50,15 +50,15 @@ class ModelEmbeddings(nn.Module):
     pad_token_idx = vocab.char2id['<pad>']
     self.char_embedding = nn.Embedding(
         num_embeddings=len(vocab.char2id),
-        embedding_dim=embed_size,
+        embedding_dim=self.char_embed_size,
         padding_idx=pad_token_idx)
     self.cnn = CNN(
         char_embed_size=self.char_embed_size,
-        word_embed_size=embed_size,
+        word_embed_size=self.embed_size,
         window_size=self.window_size,
         max_word_length=self.max_word_length)
     self.highway = Highway(
-        embed_size=self.word_embed_size, dropout_rate=self.dropout_rate)
+        embed_size=self.embed_size, dropout_rate=self.dropout_rate)
 
     ### END YOUR CODE
 
@@ -82,12 +82,12 @@ class ModelEmbeddings(nn.Module):
     # (sentence_length * batch_size, char_embed_size, max_word_length)
     char_embed = self.char_embedding(
         input.view(max_sentence_length * batch_size, max_word_length)).permute(
-            1, 0, 2)
+            0, 2, 1)
+    # (sentence_length * batch_size, word_embed_size)
     conv_out = self.cnn(char_embed)
     word_embed = self.highway(conv_out)
 
     # We need to reshape into sentences.
-    return word_embed.view(max_sentence_length, batch_size,
-                           self.word_embed_size)
+    return word_embed.view(max_sentence_length, batch_size, self.embed_size)
 
     ### END YOUR CODE
