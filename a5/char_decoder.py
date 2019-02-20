@@ -39,6 +39,9 @@ class CharDecoder(nn.Module):
         padding_idx=target_vocab.char2id['<pad>'])
     self.target_vocab = target_vocab
 
+    self.loss = nn.CrossEntropyLoss(
+        reduction='sum', ignore_index=target_vocab.char2id['<pad>'])
+
     ### END YOUR CODE
 
   def forward(self, input, dec_hidden=None):
@@ -75,7 +78,18 @@ class CharDecoder(nn.Module):
     ###
     ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
     ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
+    length, batch_size = char_sequence.shape
+    input_sequence = char_sequence[:length - 1, :]
+    target_sequence = char_sequence[1:, :]
 
+    # scores if of size (length, batch_size, self.vocab_size)
+    scores, _ = self.forward(input_sequence, dec_hidden)
+    # We compute the cross entropy loss over the batch by just considering it as a batch of characters (rather
+    # than a batch of words, which are made of characters). We've already set-it up so it takes the sum
+    # over all the characters.
+    return self.loss(
+        scores.view((length - 1) * batch_size, self.vocab_size),
+        target_sequence.view((length - 1) * batch_size))
     ### END YOUR CODE
 
   def decode_greedy(self, initialStates, device, max_length=21):
