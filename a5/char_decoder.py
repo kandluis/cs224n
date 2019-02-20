@@ -79,8 +79,8 @@ class CharDecoder(nn.Module):
     ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
     ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
     length, batch_size = char_sequence.shape
-    input_sequence = char_sequence[:length - 1, :]
-    target_sequence = char_sequence[1:, :]
+    input_sequence = char_sequence[:length - 1, :].contiguous()
+    target_sequence = char_sequence[1:, :].contiguous()
 
     # scores if of size (length, batch_size, self.vocab_size)
     scores, _ = self.forward(input_sequence, dec_hidden)
@@ -109,16 +109,30 @@ class CharDecoder(nn.Module):
     ###      - Use torch.tensor(..., device=device) to turn a list of character indices into a tensor.
     ###      - We use curly brackets as start-of-word and end-of-word characters. That is, use the character '{' for <START> and '}' for <END>.
     ###        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
-    _, batch_size, _ = initialStates.shape
+    _, batch_size, _ = initialStates[0].shape
     outputs_words = []
     current_chars = torch.tensor(
         [self.target_vocab.start_of_word] * batch_size, device=device).view(
             1, batch_size)
+    dec_hidden = initialStates
     for _ in range(max_length):
       # scores is (1, batch_size, vocab_size)
-      scores, _ = self.forward(current_chars)
+      scores, dec_hidden = self.forward(current_chars, dec_hidden=dec_hidden)
       # We select the argmax, now it is (1, batch_size)
       _, current_chars = torch.max(scores, dim=2)
       outputs_words.append(current_chars)
+
+    # Calculate final output words.
+    final_output_words = [""] * batch_size
+    ended = set()
+    for char_batch in outputs_words:
+      for i, char_tensor in enumerate(char_batch[0]):
+        char_id = char_tensor.item()
+        if char_id == self.target_vocab.end_of_word:
+          ended.add(i)
+        if i not in ended:
+          final_output_words[i] += self.target_vocab.id2char[char_id]
+
+    return final_output_words
 
     ### END YOUR CODE
