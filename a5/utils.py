@@ -46,7 +46,8 @@ def pad_sents_char(sents, char_pad_token):
   for sent in sents:
     sent_padded = [[char_pad_token] * max_word_length for _ in range(max_len)]
     for i, word in enumerate(sent):
-      sent_padded[i][:len(word)] = word[:]
+      max_len = min(max_word_length, len(word))
+      sent_padded[i][:max_len] = word[:max_len]
     sents_padded.append(sent_padded)
 
   ### END YOUR CODE
