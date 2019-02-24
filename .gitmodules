@@ -1,0 +1,3 @@
+[submodule "project/squad"]
+	path = project/squad
+	url = https://github.com/chrischute/squad.git
