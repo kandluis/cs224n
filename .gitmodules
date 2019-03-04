@@ -1,3 +1,6 @@
 [submodule "project/squad"]
 	path = project/squad
 	url = https://github.com/chrischute/squad.git
+[submodule "project/BERT"]
+	path = project/BERT
+	url = git@github.com:huggingface/pytorch-pretrained-BERT.git
